@@ -1,3 +1,7 @@
+## 0.1.1
+
+* Fix LICENSE file (replace TODO with proper MIT license).
+
 ## 0.1.0
 
 * Initial release.
