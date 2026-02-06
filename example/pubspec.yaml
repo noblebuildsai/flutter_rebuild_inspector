@@ -1,0 +1,20 @@
+name: flutter_rebuild_inspector_example
+description: Example app for flutter_rebuild_inspector
+publish_to: 'none'
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_rebuild_inspector:
+    path: ../
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
