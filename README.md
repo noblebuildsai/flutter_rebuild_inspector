@@ -28,7 +28,10 @@ Works with **any state management** (Provider, Riverpod, Bloc, GetX, setState, e
 - **RebuildTracker** — Wrap any widget to count its rebuilds
 - **Visual overlay** — Color-coded badges (green/yellow/red) based on thresholds
 - **RebuildInspectorDashboard** — In-app list of top rebuilt widgets
-- **RebuildInspectorOverlay** — One-tap floating button to toggle the dashboard
+- **RebuildInspectorOverlay** — Floating buttons: dashboard, heatmap, full-screen
+- **RebuildHeatmapOverlay** — Visual heatmap with colored borders around widgets
+- **Performance suggestions** — Dashboard shows optimization tips for high-rebuild widgets
+- **Rebuild reason inference** — Optional stack trace analysis (setState, Provider, etc.)
 - **RebuildStats** — Programmatic access to statistics
 - **Debug-only** — Zero overhead in release builds
 
@@ -64,7 +67,7 @@ MaterialApp(
 )
 ```
 
-### 3. Tap the speed icon → see which widgets rebuild the most
+### 3. Tap the speed icon → dashboard | grid icon → heatmap | expand → full-screen
 
 ## Usage
 
@@ -93,6 +96,29 @@ RebuildInspectorDashboard(
   topN: 10,        // Show top 10 rebuilt widgets
   maxHeight: 300,
   onReset: () {},   // Called when reset is pressed
+)
+```
+
+### RebuildHeatmapOverlay
+
+Add heatmap to visualize rebuild hotspots. Use `enableHeatmap: true` on RebuildTracker:
+
+```dart
+RebuildTracker(
+  name: 'ProductTile',
+  enableHeatmap: true,
+  child: ProductTile(product: product),
+)
+```
+
+Then add the overlay (or use RebuildInspectorOverlay which includes it):
+
+```dart
+Stack(
+  children: [
+    YourApp(),
+    RebuildHeatmapOverlay(),
+  ],
 )
 ```
 

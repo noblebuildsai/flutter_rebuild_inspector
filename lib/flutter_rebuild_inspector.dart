@@ -26,6 +26,8 @@
 library;
 
 export 'src/rebuild_inspector_dashboard.dart';
+export 'src/rebuild_heatmap_overlay.dart';
 export 'src/rebuild_inspector_overlay.dart';
 export 'src/rebuild_stats.dart';
 export 'src/rebuild_tracker.dart';
+export 'src/performance_suggestions.dart';

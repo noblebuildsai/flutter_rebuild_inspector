@@ -52,6 +52,8 @@ class RebuildTracker extends StatefulWidget {
     this.logToConsole = false,
     this.thresholds = RebuildThresholds.defaultThresholds,
     this.maxRebuildsToWarn,
+    this.enableHeatmap = false,
+    this.captureReason = false,
   });
 
   /// Unique name for this tracked widget (used in stats and logs).
@@ -73,15 +75,55 @@ class RebuildTracker extends StatefulWidget {
   /// If set, logs a warning when rebuild count exceeds this value.
   final int? maxRebuildsToWarn;
 
+  /// When true, registers this widget for heatmap overlay (requires
+  /// [RebuildHeatmapOverlay] to be in the widget tree).
+  final bool enableHeatmap;
+
+  /// When true, captures stack trace to infer rebuild reason (adds overhead).
+  final bool captureReason;
+
   @override
   State<RebuildTracker> createState() => _RebuildTrackerState();
 }
 
 class _RebuildTrackerState extends State<RebuildTracker> {
+  final GlobalKey _heatmapKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    if (kDebugMode && widget.enableHeatmap) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _registerHeatmap());
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant RebuildTracker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (kDebugMode && widget.enableHeatmap && !oldWidget.enableHeatmap) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _registerHeatmap());
+    } else if (!widget.enableHeatmap && oldWidget.enableHeatmap) {
+      RebuildStats.instance.unregisterHeatmapKey(widget.name);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (kDebugMode && widget.enableHeatmap) {
+      RebuildStats.instance.unregisterHeatmapKey(widget.name);
+    }
+    super.dispose();
+  }
+
+  void _registerHeatmap() {
+    RebuildStats.instance.registerHeatmapKey(widget.name, _heatmapKey);
+  }
+
   void _onBuild() {
     if (!kDebugMode) return;
 
-    RebuildStats.instance.recordRebuild(widget.name);
+    final stackTrace = widget.captureReason ? StackTrace.current : null;
+    RebuildStats.instance.recordRebuild(widget.name, stackTrace);
     final count = RebuildStats.instance.getStats(widget.name)?.buildCount ?? 0;
 
     if (widget.logToConsole) {
@@ -110,29 +152,39 @@ class _RebuildTrackerState extends State<RebuildTracker> {
       return widget.child;
     }
 
-    if (!widget.showOverlay) {
+    if (!widget.showOverlay && !widget.enableHeatmap) {
       return widget.child;
     }
 
+    if (!widget.showOverlay && !widget.enableHeatmap) {
+      return widget.child;
+    }
+
+    if (!widget.showOverlay && widget.enableHeatmap) {
+      return KeyedSubtree(key: _heatmapKey, child: widget.child);
+    }
+
     return Stack(
+      key: widget.enableHeatmap ? _heatmapKey : null,
       clipBehavior: Clip.none,
       children: [
         widget.child,
-        Positioned(
-          top: -4,
-          right: -4,
-          child: ValueListenableBuilder<int>(
-            valueListenable: RebuildStats.instance.updateNotifier,
-            builder: (context, _, __) {
-              final stats = RebuildStats.instance.getStats(widget.name);
-              final count = stats?.buildCount ?? 0;
-              return _RebuildBadge(
-                count: count,
-                color: _getBadgeColor(count),
-              );
-            },
+        if (widget.showOverlay)
+          Positioned(
+            top: -4,
+            right: -4,
+            child: ValueListenableBuilder<int>(
+              valueListenable: RebuildStats.instance.updateNotifier,
+              builder: (context, _, __) {
+                final stats = RebuildStats.instance.getStats(widget.name);
+                final count = stats?.buildCount ?? 0;
+                return _RebuildBadge(
+                  count: count,
+                  color: _getBadgeColor(count),
+                );
+              },
+            ),
           ),
-        ),
       ],
     );
   }

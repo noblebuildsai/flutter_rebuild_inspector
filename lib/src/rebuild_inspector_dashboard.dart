@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'performance_suggestions.dart';
 import 'rebuild_stats.dart';
 
 /// An in-app dashboard that shows the top rebuilt widgets.
@@ -28,6 +29,8 @@ class RebuildInspectorDashboard extends StatelessWidget {
     super.key,
     this.topN = 10,
     this.maxHeight = 300,
+    this.fullScreen = false,
+    this.showSuggestions = true,
     this.onReset,
   });
 
@@ -36,6 +39,12 @@ class RebuildInspectorDashboard extends StatelessWidget {
 
   /// Maximum height of the dashboard.
   final double maxHeight;
+
+  /// When true, shows the dashboard in full-screen mode.
+  final bool fullScreen;
+
+  /// When true, shows performance suggestions for high-rebuild widgets.
+  final bool showSuggestions;
 
   /// Callback when reset is pressed.
   final VoidCallback? onReset;
@@ -49,6 +58,8 @@ class RebuildInspectorDashboard extends StatelessWidget {
     return _RebuildDashboardContent(
       topN: topN,
       maxHeight: maxHeight,
+      fullScreen: fullScreen,
+      showSuggestions: showSuggestions,
       onReset: onReset,
     );
   }
@@ -58,11 +69,15 @@ class _RebuildDashboardContent extends StatelessWidget {
   const _RebuildDashboardContent({
     required this.topN,
     required this.maxHeight,
+    required this.fullScreen,
+    required this.showSuggestions,
     this.onReset,
   });
 
   final int topN;
   final double maxHeight;
+  final bool fullScreen;
+  final bool showSuggestions;
   final VoidCallback? onReset;
 
   Color _colorForCount(int count) {
@@ -77,7 +92,9 @@ class _RebuildDashboardContent extends StatelessWidget {
       valueListenable: RebuildStats.instance.updateNotifier,
       builder: (context, _, __) => _DashboardBody(
         topN: topN,
-        maxHeight: maxHeight,
+        maxHeight: fullScreen ? double.infinity : maxHeight,
+        fullScreen: fullScreen,
+        showSuggestions: showSuggestions,
         onReset: onReset,
         colorForCount: _colorForCount,
       ),
@@ -89,12 +106,16 @@ class _DashboardBody extends StatelessWidget {
   const _DashboardBody({
     required this.topN,
     required this.maxHeight,
+    required this.fullScreen,
+    required this.showSuggestions,
     this.onReset,
     required this.colorForCount,
   });
 
   final int topN;
   final double maxHeight;
+  final bool fullScreen;
+  final bool showSuggestions;
   final VoidCallback? onReset;
   final Color Function(int) colorForCount;
 
@@ -118,7 +139,10 @@ class _DashboardBody extends StatelessWidget {
     }
 
     return Container(
-      constraints: BoxConstraints(maxHeight: maxHeight),
+      constraints: BoxConstraints(
+        maxHeight: fullScreen ? double.infinity : maxHeight,
+        maxWidth: fullScreen ? double.infinity : 320,
+      ),
       decoration: BoxDecoration(
         color: Colors.black87,
         borderRadius: BorderRadius.circular(8),
@@ -140,15 +164,23 @@ class _DashboardBody extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '🔄 Rebuild Inspector',
-                  style: TextStyle(
+                Text(
+                  fullScreen ? '🔄 Rebuild Inspector (Full Screen)' : '🔄 Rebuild Inspector',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
                 ),
-                TextButton(
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (fullScreen)
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Close', style: TextStyle(fontSize: 12)),
+                      ),
+                    TextButton(
                   onPressed: () {
                     RebuildStats.instance.resetAll();
                     onReset?.call();
@@ -160,10 +192,16 @@ class _DashboardBody extends StatelessWidget {
                   ),
                   child: const Text('Reset', style: TextStyle(fontSize: 12)),
                 ),
+                  ],
+                ),
               ],
             ),
           ),
           const Divider(height: 1, color: Colors.white24),
+          if (showSuggestions) ...[
+            _SuggestionsSection(),
+            const Divider(height: 1, color: Colors.white24),
+          ],
           Flexible(
             child: ListView.builder(
               shrinkWrap: true,
@@ -204,6 +242,42 @@ class _DashboardBody extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SuggestionsSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final suggestions = PerformanceSuggestions.getSuggestions();
+    if (suggestions.isEmpty) return const SizedBox.shrink();
+
+    return ExpansionTile(
+      tilePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+      title: const Text(
+        '💡 Performance suggestions',
+        style: TextStyle(
+          color: Colors.amber,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+      ),
+      children: suggestions.take(5).map((s) {
+        return ListTile(
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          title: Text(
+            s.message,
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
+          ),
+          subtitle: s.fix != null
+              ? Text(
+                  s.fix!,
+                  style: TextStyle(color: Colors.green.shade200, fontSize: 10),
+                )
+              : null,
+        );
+      }).toList(),
     );
   }
 }

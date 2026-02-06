@@ -1,3 +1,14 @@
+## 0.2.0
+
+* **Full-screen dashboard** — Expand button opens dashboard in full-screen dialog
+* **Heatmap overlay** — Visual borders around tracked widgets (green/yellow/red)
+* **RebuildHeatmapOverlay** — Toggle heatmap via grid icon in overlay
+* **enableHeatmap** — RebuildTracker parameter to include widget in heatmap
+* **captureReason** — Optional stack trace capture to infer rebuild reason
+* **RebuildReason** — Enum: setState, inheritedWidget, asyncBuilder, blocBuilder
+* **Performance suggestions** — Dashboard shows optimization tips for high-rebuild widgets
+* **PerformanceSuggestions** — Programmatic access to suggestions
+
 ## 0.1.1
 
 * Fix LICENSE file (replace TODO with proper MIT license).

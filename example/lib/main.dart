@@ -49,6 +49,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
             const SizedBox(height: 24),
             RebuildTracker(
               name: 'CounterDisplay',
+              enableHeatmap: true,
               child: Text(
                 'Counter: $_counter',
                 style: Theme.of(context).textTheme.headlineMedium,
@@ -57,6 +58,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
             const SizedBox(height: 16),
             RebuildTracker(
               name: 'ToggleDisplay',
+              enableHeatmap: true,
               child: Text(
                 'Toggle: $_toggle',
                 style: Theme.of(context).textTheme.titleLarge,
@@ -84,6 +86,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
             RebuildTracker(
               name: 'StaticWidget',
               showOverlay: true,
+              enableHeatmap: true,
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
