@@ -77,12 +77,29 @@ class RebuildStats {
   final Map<String, _WidgetStats> _stats = {};
   final Map<String, GlobalKey> _heatmapKeys = {};
   final ValueNotifier<int> _updateNotifier = ValueNotifier(0);
+  bool _pendingNotify = false;
 
   /// Listen to this to rebuild when stats change (e.g. for dashboard).
   ValueListenable<int> get updateNotifier => _updateNotifier;
 
+  /// Schedules a notification after the current frame. This avoids
+  /// setState/markNeedsBuild during build when [recordRebuild] is
+  /// called from [RebuildTracker.build].
+  void _scheduleNotify() {
+    if (_pendingNotify) return;
+    _pendingNotify = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pendingNotify = false;
+      _updateNotifier.value++;
+    });
+  }
+
   /// Records a rebuild for the widget with [name].
   /// Pass [stackTrace] to infer rebuild reason (optional, has overhead).
+  ///
+  /// The notifier update is deferred to after the frame to avoid
+  /// "setState/markNeedsBuild called during build" when used with
+  /// ValueListenableBuilder (e.g. in RebuildTracker badge).
   void recordRebuild(String name, [StackTrace? stackTrace]) {
     if (!kDebugMode) return;
 
@@ -97,7 +114,7 @@ class RebuildStats {
       debugPrint('[RebuildInspector] 🔴 "$name" hit 50 rebuilds — consider optimizing');
     }
 
-    _updateNotifier.value++;
+    _scheduleNotify();
   }
 
   void _log(String message) {
@@ -180,7 +197,7 @@ class RebuildStats {
   void reset(String name) {
     if (!kDebugMode) return;
     _stats[name]?.reset();
-    _updateNotifier.value++;
+    _scheduleNotify();
   }
 
   /// Resets all build counts.
@@ -190,7 +207,7 @@ class RebuildStats {
       s.reset();
     }
     _log('Reset all rebuild counts');
-    _updateNotifier.value++;
+    _scheduleNotify();
   }
 
   /// Clears all tracked widgets from the stats.
