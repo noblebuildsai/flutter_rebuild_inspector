@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'rebuild_stats.dart';
 import 'rebuild_heatmap_overlay.dart';
 import 'rebuild_inspector_dashboard.dart';
 
@@ -41,11 +42,17 @@ class RebuildInspectorOverlay extends StatefulWidget {
 class _RebuildInspectorOverlayState extends State<RebuildInspectorOverlay> {
   bool _showDashboard = false;
   bool _showHeatmap = false;
+  static bool _loggedInit = false;
 
   @override
   Widget build(BuildContext context) {
     if (!kDebugMode) {
       return widget.child;
+    }
+
+    if (!_loggedInit && RebuildStats.enableDebugLogs) {
+      _loggedInit = true;
+      debugPrint('[RebuildInspector] 🔄 Active (debug mode) — tap speed icon for dashboard, grid for heatmap');
     }
 
     return Stack(

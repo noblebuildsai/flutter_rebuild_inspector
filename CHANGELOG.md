@@ -1,3 +1,8 @@
+## 0.2.1
+
+* **Debug logging** — Automatic logs in debug mode: init message, 20/50 rebuild warnings, reset confirmation
+* **RebuildStats.enableDebugLogs** — Toggle to disable logs (default: true in debug)
+
 ## 0.2.0
 
 * **Full-screen dashboard** — Expand button opens dashboard in full-screen dialog

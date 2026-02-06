@@ -67,6 +67,8 @@ class RebuildTracker extends StatefulWidget {
   final bool showOverlay;
 
   /// Whether to log each rebuild to the console via [debugPrint].
+  /// In debug mode, threshold warnings (20+, 50+ rebuilds) are always logged
+  /// when [RebuildStats.enableDebugLogs] is true.
   final bool logToConsole;
 
   /// Thresholds for badge color (green/yellow/red).

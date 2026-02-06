@@ -70,6 +70,10 @@ class RebuildStats {
   /// The global [RebuildStats] instance.
   static RebuildStats get instance => _instance;
 
+  /// When true (default in debug mode), logs key events to console.
+  /// Set to false to disable debug logs.
+  static bool enableDebugLogs = kDebugMode;
+
   final Map<String, _WidgetStats> _stats = {};
   final Map<String, GlobalKey> _heatmapKeys = {};
   final ValueNotifier<int> _updateNotifier = ValueNotifier(0);
@@ -83,8 +87,23 @@ class RebuildStats {
     if (!kDebugMode) return;
 
     _stats[name] ??= _WidgetStats(name: name);
-    _stats[name]!.increment(stackTrace);
+    final stats = _stats[name]!;
+    final prevCount = stats.buildCount;
+    stats.increment(stackTrace);
+
+    if (enableDebugLogs && stats.buildCount >= 20 && prevCount < 20) {
+      debugPrint('[RebuildInspector] ⚠️ "$name" exceeded 20 rebuilds (×${stats.buildCount})');
+    } else if (enableDebugLogs && stats.buildCount >= 50 && prevCount < 50) {
+      debugPrint('[RebuildInspector] 🔴 "$name" hit 50 rebuilds — consider optimizing');
+    }
+
     _updateNotifier.value++;
+  }
+
+  void _log(String message) {
+    if (kDebugMode && enableDebugLogs) {
+      debugPrint('[RebuildInspector] $message');
+    }
   }
 
   /// Returns the current stats for [name], or null if not tracked.
@@ -170,6 +189,7 @@ class RebuildStats {
     for (final s in _stats.values) {
       s.reset();
     }
+    _log('Reset all rebuild counts');
     _updateNotifier.value++;
   }
 

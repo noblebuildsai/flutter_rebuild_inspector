@@ -134,7 +134,21 @@ final top = RebuildStats.instance.getTopRebuilt(5);
 // Reset counts
 RebuildStats.instance.reset('ProductTile');
 RebuildStats.instance.resetAll();
+
+// Disable debug logs (enabled by default in debug mode)
+RebuildStats.enableDebugLogs = false;
 ```
+
+### Debug logging (debug mode)
+
+When running in debug mode, the inspector automatically logs:
+
+- **On init**: "🔄 Active (debug mode) — tap speed icon for dashboard, grid for heatmap"
+- **At 20 rebuilds**: "⚠️ [widget] exceeded 20 rebuilds"
+- **At 50 rebuilds**: "🔴 [widget] hit 50 rebuilds — consider optimizing"
+- **On reset**: "Reset all rebuild counts"
+
+Disable with `RebuildStats.enableDebugLogs = false`.
 
 ## Example
 
