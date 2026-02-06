@@ -1,3 +1,7 @@
+## 0.2.2
+
+* **Fix** — Resolve "setState/markNeedsBuild called during build" when using RebuildTracker with ValueListenableBuilder (e.g. GetX Obx). Rebuild notifications are now deferred via `addPostFrameCallback` so they occur after the build phase.
+
 ## 0.2.1
 
 * **Debug logging** — Automatic logs in debug mode: init message, 20/50 rebuild warnings, reset confirmation

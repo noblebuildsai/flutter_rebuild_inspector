@@ -1,6 +1,6 @@
 name: flutter_rebuild_inspector
 description: "A runtime widget rebuild visualizer for Flutter. Track rebuild counts, see visual badges (red/yellow/green), and view an in-app dashboard—no DevTools needed."
-version: "0.2.1"
+version: "0.2.2"
 homepage: https://github.com/noblebuildsai/flutter_rebuild_inspector
 repository: https://github.com/noblebuildsai/flutter_rebuild_inspector
 documentation: https://github.com/noblebuildsai/flutter_rebuild_inspector#readme

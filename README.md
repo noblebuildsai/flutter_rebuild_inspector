@@ -39,7 +39,7 @@ Works with **any state management** (Provider, Riverpod, Bloc, GetX, setState, e
 
 ```yaml
 dependencies:
-  flutter_rebuild_inspector: ^0.1.0
+  flutter_rebuild_inspector: ^0.2.2
 ```
 
 ## Quick Start
